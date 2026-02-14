@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:app/domain/models/user.dart';
 
-import '../../../testing/fixtures/user_fixtures.dart';
+import '../../testing/fixtures/user_fixtures.dart';
 
 void main() {
   group('User', () {
@@ -11,7 +11,6 @@ void main() {
       test('fromJson creates User from JSON with all fields', () {
         final json = {
           'id': 'user-123',
-          'email': 'john@example.com',
           'firstName': 'John',
           'lastName': 'Doe',
           'photoUrl': 'https://example.com/photo.jpg',
@@ -22,7 +21,6 @@ void main() {
         final user = User.fromJson(json);
 
         expect(user.id, equals('user-123'));
-        expect(user.email, equals('john@example.com'));
         expect(user.firstName, equals('John'));
         expect(user.lastName, equals('Doe'));
         expect(user.photoUrl, equals('https://example.com/photo.jpg'));
@@ -38,7 +36,6 @@ void main() {
         final user = User.fromJson(json);
 
         expect(user.id, equals('user-123'));
-        expect(user.email, isNull);
         expect(user.firstName, isNull);
         expect(user.lastName, isNull);
         expect(user.photoUrl, isNull);
@@ -49,7 +46,6 @@ void main() {
       test('fromJson creates User from JSON with null optional fields', () {
         final json = {
           'id': 'user-123',
-          'email': null,
           'firstName': null,
           'lastName': null,
           'photoUrl': null,
@@ -58,7 +54,6 @@ void main() {
         final user = User.fromJson(json);
 
         expect(user.id, equals('user-123'));
-        expect(user.email, isNull);
         expect(user.firstName, isNull);
         expect(user.lastName, isNull);
         expect(user.photoUrl, isNull);
@@ -70,7 +65,6 @@ void main() {
         final json = user.toJson();
 
         expect(json['id'], equals(user.id));
-        expect(json['email'], equals(user.email));
         expect(json['firstName'], equals(user.firstName));
         expect(json['lastName'], equals(user.lastName));
         expect(json['photoUrl'], equals(user.photoUrl));
@@ -84,7 +78,6 @@ void main() {
         final json = user.toJson();
 
         expect(json['id'], equals(user.id));
-        expect(json['email'], equals(user.email));
         expect(json['firstName'], isNull);
         expect(json['lastName'], isNull);
         expect(json['photoUrl'], isNull);
@@ -96,7 +89,6 @@ void main() {
         final restored = User.fromJson(json);
 
         expect(restored.id, equals(original.id));
-        expect(restored.email, equals(original.email));
         expect(restored.firstName, equals(original.firstName));
         expect(restored.lastName, equals(original.lastName));
         expect(restored.photoUrl, equals(original.photoUrl));
@@ -106,7 +98,6 @@ void main() {
     group('Firestore Serialization', () {
       test('fromFirestore creates User from Firestore data', () {
         final firestoreData = {
-          'email': 'jane@example.com',
           'first_name': 'Jane',
           'last_name': 'Doe',
           'photo_url': 'https://example.com/jane.jpg',
@@ -117,7 +108,6 @@ void main() {
         final user = User.fromFirestore(firestoreData, 'firestore-id-123');
 
         expect(user.id, equals('firestore-id-123'));
-        expect(user.email, equals('jane@example.com'));
         expect(user.firstName, equals('Jane'));
         expect(user.lastName, equals('Doe'));
         expect(user.photoUrl, equals('https://example.com/jane.jpg'));
@@ -125,9 +115,8 @@ void main() {
         expect(user.updatedAt, equals(DateTime(2024, 1, 10)));
       });
 
-      test('fromFirestore creates User with null timestamp fields', () {
+      test('fromFirestore creates User with null fields', () {
         final firestoreData = {
-          'email': 'alice@example.com',
           'first_name': 'Alice',
           'last_name': null,
           'photo_url': null,
@@ -138,7 +127,6 @@ void main() {
         final user = User.fromFirestore(firestoreData, 'user-alice');
 
         expect(user.id, equals('user-alice'));
-        expect(user.email, equals('alice@example.com'));
         expect(user.firstName, equals('Alice'));
         expect(user.lastName, isNull);
         expect(user.photoUrl, isNull);
@@ -147,14 +135,11 @@ void main() {
       });
 
       test('fromFirestore creates User with missing optional fields', () {
-        final firestoreData = {
-          'email': 'bob@example.com',
-        };
+        final firestoreData = <String, dynamic>{};
 
         final user = User.fromFirestore(firestoreData, 'user-bob');
 
         expect(user.id, equals('user-bob'));
-        expect(user.email, equals('bob@example.com'));
         expect(user.firstName, isNull);
         expect(user.lastName, isNull);
         expect(user.photoUrl, isNull);
@@ -167,7 +152,6 @@ void main() {
 
         final firestoreData = user.toFirestore();
 
-        expect(firestoreData['email'], equals(user.email));
         expect(firestoreData['first_name'], equals(user.firstName));
         expect(firestoreData['last_name'], equals(user.lastName));
         expect(firestoreData['photo_url'], equals(user.photoUrl));
@@ -176,9 +160,8 @@ void main() {
       });
 
       test('toFirestore converts User with null fields', () {
-        final user = User(
+        const user = User(
           id: 'user-123',
-          email: 'john@example.com',
           firstName: null,
           lastName: null,
           photoUrl: null,
@@ -188,7 +171,6 @@ void main() {
 
         final firestoreData = user.toFirestore();
 
-        expect(firestoreData['email'], equals(user.email));
         expect(firestoreData['first_name'], isNull);
         expect(firestoreData['last_name'], isNull);
         expect(firestoreData['photo_url'], isNull);
@@ -198,9 +180,7 @@ void main() {
       test('roundtrip Firestore serialization preserves data', () {
         final original = UserFixtures.fullUser;
 
-        // Create Firestore data manually to simulate the database
         final firestoreData = {
-          'email': original.email,
           'first_name': original.firstName,
           'last_name': original.lastName,
           'photo_url': original.photoUrl,
@@ -215,7 +195,6 @@ void main() {
         final restored = User.fromFirestore(firestoreData, original.id);
 
         expect(restored.id, equals(original.id));
-        expect(restored.email, equals(original.email));
         expect(restored.firstName, equals(original.firstName));
         expect(restored.lastName, equals(original.lastName));
         expect(restored.photoUrl, equals(original.photoUrl));
@@ -223,16 +202,14 @@ void main() {
     });
 
     group('Equatable Equality', () {
-      test('two Users with same id are equal', () {
-        final user1 = User(
+      test('two Users with same fields are equal', () {
+        const user1 = User(
           id: 'user-123',
-          email: 'john@example.com',
           firstName: 'John',
           lastName: 'Doe',
         );
-        final user2 = User(
+        const user2 = User(
           id: 'user-123',
-          email: 'john@example.com',
           firstName: 'John',
           lastName: 'Doe',
         );
@@ -240,52 +217,26 @@ void main() {
         expect(user1, equals(user2));
       });
 
-      test('two Users with same data but different emails are equal', () {
-        // Equatable compares all fields
-        final user1 = User(
-          id: 'user-123',
-          email: 'john@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-        );
-        final user2 = User(
-          id: 'user-123',
-          email: 'jane@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-        );
-
-        expect(user1, isNot(equals(user2)));
-      });
-
       test('two Users with different ids are not equal', () {
-        final user1 = User(
-          id: 'user-123',
-          email: 'john@example.com',
-        );
-        final user2 = User(
-          id: 'user-456',
-          email: 'john@example.com',
-        );
+        const user1 = User(id: 'user-123');
+        const user2 = User(id: 'user-456');
 
         expect(user1, isNot(equals(user2)));
       });
 
       test('User.empty equals User with empty id', () {
-        final emptyUser = const User(id: '');
+        const emptyUser = User(id: '');
 
         expect(emptyUser, equals(User.empty));
       });
 
       test('hashCode is consistent for equal Users', () {
-        final user1 = User(
+        const user1 = User(
           id: 'user-123',
-          email: 'john@example.com',
           firstName: 'John',
         );
-        final user2 = User(
+        const user2 = User(
           id: 'user-123',
-          email: 'john@example.com',
           firstName: 'John',
         );
 
@@ -332,33 +283,13 @@ void main() {
       });
 
       test('trims whitespace from full name', () {
-        final user = User(
+        const user = User(
           id: 'user-123',
           firstName: 'John',
           lastName: 'Doe',
         );
 
         expect(user.fullName, equals('John Doe'));
-      });
-
-      test('handles single space between names correctly', () {
-        final user = User(
-          id: 'user-123',
-          firstName: 'John',
-          lastName: 'Doe',
-        );
-
-        expect(user.fullName, equals('John Doe'));
-      });
-
-      test('returns trimmed string with only first name', () {
-        final user = User(
-          id: 'user-123',
-          firstName: 'Charlie',
-          lastName: null,
-        );
-
-        expect(user.fullName, equals('Charlie'));
       });
     });
 
@@ -393,16 +324,6 @@ void main() {
         final copy = original.copyWith(id: 'new-id');
 
         expect(copy.id, equals('new-id'));
-        expect(copy.email, equals(original.email));
-        expect(copy.firstName, equals(original.firstName));
-      });
-
-      test('copyWith creates copy with updated email', () {
-        final original = UserFixtures.fullUser;
-        final copy = original.copyWith(email: 'new@example.com');
-
-        expect(copy.id, equals(original.id));
-        expect(copy.email, equals('new@example.com'));
         expect(copy.firstName, equals(original.firstName));
       });
 
@@ -418,7 +339,6 @@ void main() {
         );
 
         expect(copy.id, equals(original.id));
-        expect(copy.email, equals(original.email));
         expect(copy.firstName, equals('Updated'));
         expect(copy.lastName, equals('Name'));
         expect(copy.photoUrl, equals('https://new.url/photo.jpg'));
@@ -440,36 +360,22 @@ void main() {
         expect(user.displayName, equals('Jane Doe'));
       });
 
-      test('returns email when full name is not available', () {
-        final user = UserFixtures.basicUser;
-
-        expect(user.displayName, equals('john@example.com'));
-      });
-
-      test('returns Unknown User when neither name nor email available', () {
-        final user = UserFixtures.userWithoutEmail;
-
-        expect(user.displayName, equals('Charlie Brown'));
-      });
-
-      test(
-          'returns Unknown User when no name and no email',
-          () {
+      test('returns Unknown User when no name available', () {
         final user = UserFixtures.userMinimal;
 
         expect(user.displayName, equals('Unknown User'));
       });
 
-      test('prioritizes full name over email', () {
-        final user = User(
-          id: 'user-123',
-          email: 'email@example.com',
-          firstName: 'First',
-          lastName: 'Last',
-        );
+      test('returns full name when both parts present', () {
+        final user = UserFixtures.userWithFullName;
 
-        expect(user.displayName, equals('First Last'));
-        expect(user.displayName, isNot(equals('email@example.com')));
+        expect(user.displayName, equals('Charlie Brown'));
+      });
+
+      test('returns first name only when last name missing', () {
+        final user = UserFixtures.userWithFirstName;
+
+        expect(user.displayName, equals('Alice'));
       });
     });
   });

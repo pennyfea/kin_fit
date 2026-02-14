@@ -102,11 +102,7 @@ class _PhoneLoginViewState extends State<_PhoneLoginView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Phone Login'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        title: const Text('Kin'),
       ),
       body: BlocConsumer<LoginCubit, LoginState>(
         listener: (context, state) {

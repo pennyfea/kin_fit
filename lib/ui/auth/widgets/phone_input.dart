@@ -49,7 +49,11 @@ class PhoneInput extends StatelessWidget {
       textInputAction: TextInputAction.done,
       onChanged: (phone) {
         if (onChanged != null) {
-          onChanged!(phone.completeNumber);
+          try {
+            onChanged!(phone.completeNumber);
+          } catch (_) {
+            // Number still incomplete — ignore until valid
+          }
         }
       },
       onSubmitted: (value) {
@@ -63,7 +67,11 @@ class PhoneInput extends StatelessWidget {
         if (phone == null || phone.number.isEmpty) {
           return 'Phone number is required';
         }
-        if (!phone.isValidNumber()) {
+        try {
+          if (!phone.isValidNumber()) {
+            return 'Please enter a valid phone number';
+          }
+        } catch (_) {
           return 'Please enter a valid phone number';
         }
         return null;

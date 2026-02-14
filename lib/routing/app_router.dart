@@ -1,17 +1,28 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/repositories/authentication_repository.dart';
-import '../ui/auth/widgets/login_screen.dart';
+import '../data/repositories/check_in_repository.dart';
+import '../data/repositories/group_repository.dart';
+import '../data/repositories/user_repository.dart';
+import '../ui/app/blocs/app_bloc.dart';
+import '../ui/auth/widgets/phone_login_screen.dart';
+import '../ui/check_in/widgets/check_in_screen.dart';
+import '../ui/groups/widgets/create_group_screen.dart';
+import '../ui/groups/widgets/group_detail_screen.dart';
+import '../ui/groups/widgets/groups_screen.dart';
+import '../ui/groups/widgets/join_group_screen.dart';
+import '../ui/home/blocs/feed_cubit.dart';
+import '../ui/home/widgets/home_screen.dart';
+import '../ui/profile/widgets/edit_profile_screen.dart';
+import '../ui/profile/widgets/profile_screen.dart';
 import 'routes.dart';
 
 /// The application router configuration.
-///
-/// Handles navigation and authentication-based redirects using GoRouter.
 class AppRouter {
-  /// Creates an [AppRouter].
   AppRouter({
     required AuthenticationRepository authenticationRepository,
   }) : _authenticationRepository = authenticationRepository;
@@ -27,89 +38,103 @@ class AppRouter {
     ),
   );
 
-  /// Defines the application routes.
   List<RouteBase> get _routes => [
         GoRoute(
           path: Routes.login,
           name: 'login',
-          builder: (context, state) => const LoginScreen(),
+          builder: (context, state) => const PhoneLoginScreen(),
         ),
         GoRoute(
           path: Routes.home,
           name: 'home',
-          builder: (context, state) => const HomeScreen(),
+          builder: (context, state) {
+            final userId = context.read<AppBloc>().state.user.id;
+            return BlocProvider(
+              create: (context) => FeedCubit(
+                groupRepository: context.read<GroupRepository>(),
+                checkInRepository: context.read<CheckInRepository>(),
+                userRepository: context.read<UserRepository>(),
+                userId: userId,
+              )..load(),
+              child: const HomeScreen(),
+            );
+          },
+        ),
+        GoRoute(
+          path: Routes.checkIn,
+          name: 'checkIn',
+          redirect: (context, state) {
+            if (state.uri.queryParameters['photoPath'] == null) {
+              return Routes.home;
+            }
+            return null;
+          },
+          builder: (context, state) {
+            final photoPath = Uri.decodeComponent(
+              state.uri.queryParameters['photoPath']!,
+            );
+            final groupId = state.uri.queryParameters['groupId'];
+            return CheckInScreen(photoPath: photoPath, groupId: groupId);
+          },
+        ),
+        GoRoute(
+          path: Routes.groups,
+          name: 'groups',
+          builder: (context, state) => const GroupsScreen(),
+          routes: [
+            GoRoute(
+              path: 'create',
+              name: 'createGroup',
+              builder: (context, state) => const CreateGroupScreen(),
+            ),
+            GoRoute(
+              path: 'join',
+              name: 'joinGroup',
+              builder: (context, state) => const JoinGroupScreen(),
+            ),
+            GoRoute(
+              path: Routes.groupDetail,
+              name: 'groupDetail',
+              builder: (context, state) {
+                final groupId = state.pathParameters['groupId']!;
+                return GroupDetailScreen(groupId: groupId);
+              },
+            ),
+          ],
+        ),
+        GoRoute(
+          path: Routes.profile,
+          name: 'profile',
+          builder: (context, state) => const ProfileScreen(),
+          routes: [
+            GoRoute(
+              path: 'edit',
+              name: 'editProfile',
+              builder: (context, state) => const EditProfileScreen(),
+            ),
+          ],
         ),
       ];
 
-  /// Handles authentication-based redirects.
-  ///
-  /// Redirects to login if the user is not authenticated.
-  /// Redirects to home if the user is authenticated and tries to access login.
   String? _redirect(BuildContext context, GoRouterState state) {
     final user = _authenticationRepository.currentUser;
     final isAuthenticated = user.isNotEmpty;
     final isLoggingIn = state.matchedLocation == Routes.login;
 
-    // Redirect to login if not authenticated and not already on login page
     if (!isAuthenticated && !isLoggingIn) {
       return Routes.login;
     }
 
-    // Redirect to home if authenticated and on login page
     if (isAuthenticated && isLoggingIn) {
       return Routes.home;
     }
 
-    // No redirect needed
     return null;
   }
 }
 
-/// A simple home screen placeholder.
-///
-/// This should be replaced with your actual home screen implementation.
-class HomeScreen extends StatelessWidget {
-  /// Creates a [HomeScreen].
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              // TODO: Implement logout
-            },
-          ),
-        ],
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.home, size: 80),
-            SizedBox(height: 16),
-            Text(
-              'Welcome Home!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text('You are now authenticated.'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// A listenable that notifies listeners when a stream emits a new value.
-///
-/// Used to refresh the GoRouter when the authentication state changes.
 class GoRouterRefreshStream extends ChangeNotifier {
-  /// Creates a [GoRouterRefreshStream].
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen(

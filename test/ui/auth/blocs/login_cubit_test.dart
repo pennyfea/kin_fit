@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:app/ui/auth/blocs/login/login_cubit.dart';
 import 'package:app/ui/auth/blocs/login/login_state.dart';
 
-import '../../../../testing/fakes/fake_authentication_repository.dart';
+import '../../../testing/fakes/fake_authentication_repository.dart';
 
 void main() {
   group('LoginCubit', () {
@@ -20,175 +20,6 @@ void main() {
 
     tearDown(() {
       loginCubit.close();
-    });
-
-    group('Google Login', () {
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, success] when logInWithGoogle succeeds',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithGoogle(),
-        expect: () => [
-          const LoginState.loading(),
-          const LoginState.success(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, failure] when logInWithGoogle fails',
-        setUp: () {
-          authenticationRepository.shouldThrowOnLogIn = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithGoogle(),
-        expect: () => [
-          const LoginState.loading(),
-          isA<LoginState>(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'records login attempt on Google login',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithGoogle(),
-        verify: (cubit) {
-          expect(authenticationRepository.loginAttempts, contains('google'));
-        },
-      );
-    });
-
-    group('Apple Login', () {
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, success] when logInWithApple succeeds',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithApple(),
-        expect: () => [
-          const LoginState.loading(),
-          const LoginState.success(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, failure] when logInWithApple fails',
-        setUp: () {
-          authenticationRepository.shouldThrowOnLogIn = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithApple(),
-        expect: () => [
-          const LoginState.loading(),
-          isA<LoginState>(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'records login attempt on Apple login',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithApple(),
-        verify: (cubit) {
-          expect(authenticationRepository.loginAttempts, contains('apple'));
-        },
-      );
-    });
-
-    group('Email and Password Login', () {
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, success] when logInWithEmailAndPassword succeeds',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithEmailAndPassword(
-          email: 'test@example.com',
-          password: 'password123',
-        ),
-        expect: () => [
-          const LoginState.loading(),
-          const LoginState.success(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, failure] when logInWithEmailAndPassword fails',
-        setUp: () {
-          authenticationRepository.shouldThrowOnLogIn = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithEmailAndPassword(
-          email: 'test@example.com',
-          password: 'password123',
-        ),
-        expect: () => [
-          const LoginState.loading(),
-          isA<LoginState>(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'records login attempt with email',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithEmailAndPassword(
-          email: 'john@example.com',
-          password: 'password123',
-        ),
-        verify: (cubit) {
-          expect(authenticationRepository.loginAttempts,
-              contains('john@example.com'));
-        },
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'preserves email during login',
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithEmailAndPassword(
-          email: 'test@example.com',
-          password: 'password123',
-        ),
-        verify: (cubit) {
-          expect(authenticationRepository.currentUser.email,
-              equals('test@example.com'));
-        },
-      );
-    });
-
-    group('Email and Password Signup', () {
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, success] when signUpWithEmailAndPassword succeeds',
-        build: () => loginCubit,
-        act: (cubit) => cubit.signUpWithEmailAndPassword(
-          email: 'newuser@example.com',
-          password: 'password123',
-        ),
-        expect: () => [
-          const LoginState.loading(),
-          const LoginState.success(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'emits [loading, failure] when signUpWithEmailAndPassword fails',
-        setUp: () {
-          authenticationRepository.shouldThrowOnSignUp = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.signUpWithEmailAndPassword(
-          email: 'newuser@example.com',
-          password: 'password123',
-        ),
-        expect: () => [
-          const LoginState.loading(),
-          isA<LoginState>(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'records signup attempt',
-        build: () => loginCubit,
-        act: (cubit) => cubit.signUpWithEmailAndPassword(
-          email: 'signup@example.com',
-          password: 'password123',
-        ),
-        verify: (cubit) {
-          expect(authenticationRepository.loginAttempts,
-              contains('signup-signup@example.com'));
-        },
-      );
     });
 
     group('Phone Authentication', () {
@@ -276,7 +107,6 @@ void main() {
         build: () => loginCubit,
         act: (cubit) async {
           await cubit.sendPhoneCode('+11234567890');
-          // Simulate user entering code
           await cubit.verifyPhoneCode(
             verificationId: authenticationRepository.lastVerificationId!,
             smsCode: '123456',
@@ -304,41 +134,28 @@ void main() {
         'reset emits initial state',
         build: () => loginCubit,
         act: (cubit) async {
-          await cubit.logInWithGoogle();
+          await cubit.sendPhoneCode('+11234567890');
           cubit.reset();
         },
         expect: () => [
           const LoginState.loading(),
-          const LoginState.success(),
+          isA<LoginState>(),
           const LoginState.initial(),
         ],
       );
 
       blocTest<LoginCubit, LoginState>(
-        'multiple sequential login attempts are handled correctly',
+        'multiple sequential operations are handled correctly',
         build: () => loginCubit,
         act: (cubit) async {
-          await cubit.logInWithGoogle();
+          await cubit.sendPhoneCode('+11234567890');
           cubit.reset();
-          await cubit.logInWithApple();
+          await cubit.sendPhoneCode('+10987654321');
         },
         expect: () => [
           const LoginState.loading(),
-          const LoginState.success(),
+          isA<LoginState>(),
           const LoginState.initial(),
-          const LoginState.loading(),
-          const LoginState.success(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'failure state can be emitted',
-        setUp: () {
-          authenticationRepository.shouldThrowOnLogIn = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithGoogle(),
-        expect: () => [
           const LoginState.loading(),
           isA<LoginState>(),
         ],
@@ -346,35 +163,6 @@ void main() {
     });
 
     group('Error Handling', () {
-      blocTest<LoginCubit, LoginState>(
-        'unexpected error during Google login emits failure',
-        setUp: () {
-          authenticationRepository.shouldThrowOnLogIn = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithGoogle(),
-        expect: () => [
-          const LoginState.loading(),
-          isA<LoginState>(),
-        ],
-      );
-
-      blocTest<LoginCubit, LoginState>(
-        'unexpected error during email login emits failure',
-        setUp: () {
-          authenticationRepository.shouldThrowOnLogIn = true;
-        },
-        build: () => loginCubit,
-        act: (cubit) => cubit.logInWithEmailAndPassword(
-          email: 'test@example.com',
-          password: 'password',
-        ),
-        expect: () => [
-          const LoginState.loading(),
-          isA<LoginState>(),
-        ],
-      );
-
       blocTest<LoginCubit, LoginState>(
         'unexpected error during phone code send emits failure',
         setUp: () {
@@ -412,10 +200,10 @@ void main() {
           authenticationRepository.delay = const Duration(milliseconds: 100);
         },
         build: () => loginCubit,
-        act: (cubit) => cubit.logInWithGoogle(),
+        act: (cubit) => cubit.sendPhoneCode('+11234567890'),
         expect: () => [
           const LoginState.loading(),
-          const LoginState.success(),
+          isA<LoginState>(),
         ],
       );
     });
