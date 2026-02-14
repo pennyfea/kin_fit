@@ -45,3 +45,31 @@ final class GroupJoinRequested extends GroupEvent {
   @override
   List<Object?> get props => [inviteCode, userId];
 }
+
+/// Leave a group.
+final class GroupLeaveRequested extends GroupEvent {
+  const GroupLeaveRequested({
+    required this.groupId,
+    required this.userId,
+  });
+
+  final String groupId;
+  final String userId;
+
+  @override
+  List<Object?> get props => [groupId, userId];
+}
+
+/// Delete a group (creator only).
+final class GroupDeleteRequested extends GroupEvent {
+  const GroupDeleteRequested({
+    required this.groupId,
+    required this.userId,
+  });
+
+  final String groupId;
+  final String userId;
+
+  @override
+  List<Object?> get props => [groupId, userId];
+}

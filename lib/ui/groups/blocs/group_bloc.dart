@@ -20,6 +20,8 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
     on<GroupsSubscriptionRequested>(_onSubscriptionRequested);
     on<GroupCreateRequested>(_onCreateRequested);
     on<GroupJoinRequested>(_onJoinRequested);
+    on<GroupLeaveRequested>(_onLeaveRequested);
+    on<GroupDeleteRequested>(_onDeleteRequested);
   }
 
   static const _log = Logger('GroupBloc');
@@ -136,6 +138,105 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       emit(state.copyWith(
         actionStatus: GroupActionStatus.failure,
         actionError: 'Failed to join group. Please try again.',
+      ));
+    }
+  }
+
+  Future<void> _onLeaveRequested(
+    GroupLeaveRequested event,
+    Emitter<GroupState> emit,
+  ) async {
+    emit(state.copyWith(actionStatus: GroupActionStatus.loading));
+
+    try {
+      final group = await _groupRepository.getGroup(event.groupId);
+      if (group == null) {
+        emit(state.copyWith(
+          actionStatus: GroupActionStatus.failure,
+          actionError: 'Group not found.',
+        ));
+        return;
+      }
+
+      final isLastMember = group.memberIds.length <= 1;
+
+      if (isLastMember) {
+        // Auto-delete when the last member leaves
+        await _groupRepository.deleteGroup(event.groupId);
+        _log.info('Leave: last member left, group deleted');
+      } else {
+        // Remove member
+        await _groupRepository.removeMember(event.groupId, event.userId);
+
+        // Transfer ownership if creator is leaving
+        if (group.creatorId == event.userId) {
+          final newCreator = group.memberIds
+              .firstWhere((id) => id != event.userId);
+          await _groupRepository.updateCreator(event.groupId, newCreator);
+          _log.info('Leave: ownership transferred to $newCreator');
+        }
+      }
+
+      try {
+        await _userRepository.removeGroupFromUser(
+          event.userId,
+          event.groupId,
+        );
+      } catch (e) {
+        _log.warning('Leave: removeGroupFromUser failed: $e');
+      }
+
+      emit(state.copyWith(actionStatus: GroupActionStatus.success));
+    } catch (e) {
+      emit(state.copyWith(
+        actionStatus: GroupActionStatus.failure,
+        actionError: 'Failed to leave group. Please try again.',
+      ));
+    }
+  }
+
+  Future<void> _onDeleteRequested(
+    GroupDeleteRequested event,
+    Emitter<GroupState> emit,
+  ) async {
+    emit(state.copyWith(actionStatus: GroupActionStatus.loading));
+
+    try {
+      final group = await _groupRepository.getGroup(event.groupId);
+      if (group == null) {
+        emit(state.copyWith(
+          actionStatus: GroupActionStatus.failure,
+          actionError: 'Group not found.',
+        ));
+        return;
+      }
+
+      if (group.creatorId != event.userId) {
+        emit(state.copyWith(
+          actionStatus: GroupActionStatus.failure,
+          actionError: 'Only the group creator can delete this group.',
+        ));
+        return;
+      }
+
+      await _groupRepository.deleteGroup(event.groupId);
+      _log.info('Delete: group ${event.groupId} deleted');
+
+      // Clean up group reference for the current user
+      try {
+        await _userRepository.removeGroupFromUser(
+          event.userId,
+          event.groupId,
+        );
+      } catch (e) {
+        _log.warning('Delete: removeGroupFromUser failed: $e');
+      }
+
+      emit(state.copyWith(actionStatus: GroupActionStatus.success));
+    } catch (e) {
+      emit(state.copyWith(
+        actionStatus: GroupActionStatus.failure,
+        actionError: 'Failed to delete group. Please try again.',
       ));
     }
   }

@@ -41,6 +41,8 @@
 	<string>Kin Fit needs camera access to take check-in photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Kin Fit needs photo library access to choose check-in photos.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Kin Fit needs access to your contacts to invite friends to your group.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Kin Fit needs microphone access for the camera.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

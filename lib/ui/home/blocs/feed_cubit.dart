@@ -67,11 +67,6 @@ class FeedCubit extends Cubit<FeedState> {
       _allMemberIds.addAll(group.memberIds);
     }
 
-    // TODO: Remove — fake members for layout preview
-    for (var i = 0; i < 8; i++) {
-      _allMemberIds.add('fake_member_$i');
-    }
-
     // Fetch profiles for all members (not just those who checked in)
     _fetchMemberProfiles();
 

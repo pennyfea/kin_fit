@@ -124,6 +124,26 @@ class GroupRepository {
     }
   }
 
+  /// Updates the creator of a group (for ownership transfer).
+  Future<void> updateCreator(String groupId, String newCreatorId) async {
+    try {
+      await _groupsCollection.doc(groupId).update({
+        'creator_id': newCreatorId,
+      });
+    } on FirebaseException catch (e) {
+      throw GroupRepositoryException.fromCode(e.code);
+    }
+  }
+
+  /// Deletes a group entirely.
+  Future<void> deleteGroup(String groupId) async {
+    try {
+      await _groupsCollection.doc(groupId).delete();
+    } on FirebaseException catch (e) {
+      throw GroupRepositoryException.fromCode(e.code);
+    }
+  }
+
   /// Generates a 6-character alphanumeric invite code.
   String _generateInviteCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
