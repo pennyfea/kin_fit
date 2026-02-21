@@ -616,7 +616,7 @@ class _LoadedView extends StatelessWidget {
     if (selected == null || !context.mounted) return;
 
     final phone = selected.phones.first.number;
-    final message = 'Join my group "${group.name}" on Kin! '
+    final message = 'Join my group "${group.name}" on Bod Squad! '
         'Use invite code: ${group.inviteCode}';
     final smsUri = Uri(
       scheme: 'sms',

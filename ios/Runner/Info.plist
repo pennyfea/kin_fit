@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Kin Fit</string>
+	<string>Bod Squad</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Kin</string>
+	<string>Bod Squad</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -38,13 +38,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Kin Fit needs camera access to take check-in photos.</string>
+	<string>Bod Squad needs camera access to take check-in photos.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Kin Fit needs photo library access to choose check-in photos.</string>
+	<string>Bod Squad needs photo library access to choose check-in photos.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>Kin Fit needs access to your contacts to invite friends to your group.</string>
+	<string>Bod Squad needs access to your contacts to invite friends to your group.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Kin Fit needs microphone access for the camera.</string>
+	<string>Bod Squad needs microphone access for the camera.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

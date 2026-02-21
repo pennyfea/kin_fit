@@ -5,8 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:app/data/repositories/authentication_repository.dart';
-import 'package:app/domain/models/user.dart';
+import 'package:bod_squad/data/repositories/authentication_repository.dart';
+import 'package:bod_squad/domain/models/user.dart';
 
 class MockFirebaseAuth extends Mock implements firebase_auth.FirebaseAuth {}
 

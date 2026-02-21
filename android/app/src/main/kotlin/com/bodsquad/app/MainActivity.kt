@@ -1,4 +1,4 @@
-package com.template.flutter_template
+package com.bodsquad.app
 
 import io.flutter.embedding.android.FlutterActivity
 

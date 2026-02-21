@@ -139,12 +139,12 @@ class _LoadedProfile extends StatelessWidget {
               _MenuItem(
                 icon: Icons.help_outline_rounded,
                 label: 'Help & FAQ',
-                onTap: () => _openUrl('https://kin.fit/help'),
+                onTap: () => _openUrl('https://bodsquad.app/help'),
               ),
               _MenuItem(
                 icon: Icons.chat_bubble_outline_rounded,
                 label: 'Contact Us',
-                onTap: () => _openUrl('mailto:support@kin.fit'),
+                onTap: () => _openUrl('mailto:support@bodsquad.app'),
               ),
               _MenuItem(
                 icon: Icons.star_outline_rounded,
@@ -163,12 +163,12 @@ class _LoadedProfile extends StatelessWidget {
               _MenuItem(
                 icon: Icons.description_outlined,
                 label: 'Terms of Service',
-                onTap: () => _openUrl('https://kin.fit/terms'),
+                onTap: () => _openUrl('https://bodsquad.app/terms'),
               ),
               _MenuItem(
                 icon: Icons.shield_outlined,
                 label: 'Privacy Policy',
-                onTap: () => _openUrl('https://kin.fit/privacy'),
+                onTap: () => _openUrl('https://bodsquad.app/privacy'),
               ),
             ],
           ),
@@ -209,7 +209,7 @@ class _LoadedProfile extends StatelessWidget {
 
   void _shareInvite(BuildContext context) {
     Clipboard.setData(
-      const ClipboardData(text: 'Join me on Kin! https://kin.fit'),
+      const ClipboardData(text: 'Join me on Bod Squad! https://bodsquad.app'),
     );
     context.showSnackBar('Invite link copied!');
   }
@@ -819,7 +819,7 @@ class _VersionInfo extends StatelessWidget {
 
         return Center(
           child: Text(
-            'Kin $version',
+            'Bod Squad $version',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurface.withValues(alpha: 0.25),
             ),

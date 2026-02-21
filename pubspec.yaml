@@ -1,5 +1,5 @@
-name: app
-description: "A new Flutter project created from template optimized for AI-assisted development"
+name: bod_squad
+description: "Bod Squad — fitness accountability with your crew"
 publish_to: 'none'
 
 version: 0.1.0+1

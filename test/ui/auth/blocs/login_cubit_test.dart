@@ -1,8 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:app/ui/auth/blocs/login/login_cubit.dart';
-import 'package:app/ui/auth/blocs/login/login_state.dart';
+import 'package:bod_squad/ui/auth/blocs/login/login_cubit.dart';
+import 'package:bod_squad/ui/auth/blocs/login/login_state.dart';
 
 import '../../../testing/fakes/fake_authentication_repository.dart';
 

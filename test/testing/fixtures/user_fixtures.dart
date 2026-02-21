@@ -1,4 +1,4 @@
-import 'package:app/domain/models/user.dart';
+import 'package:bod_squad/domain/models/user.dart';
 
 /// Test fixtures for [User] model.
 class UserFixtures {

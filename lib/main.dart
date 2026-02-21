@@ -125,7 +125,7 @@ class _AppViewState extends State<AppView> {
         }
       },
       child: MaterialApp.router(
-        title: 'Kin Fit',
+        title: 'Bod Squad',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         darkTheme: AppTheme.dark,

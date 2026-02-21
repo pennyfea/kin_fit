@@ -1,5 +1,5 @@
-import 'package:app/data/repositories/authentication_repository.dart';
-import 'package:app/domain/models/user.dart';
+import 'package:bod_squad/data/repositories/authentication_repository.dart';
+import 'package:bod_squad/domain/models/user.dart';
 
 /// A fake [AuthenticationRepository] for testing phone-only auth flows.
 class FakeAuthenticationRepository implements AuthenticationRepository {
