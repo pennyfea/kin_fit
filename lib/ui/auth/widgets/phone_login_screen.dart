@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/repositories/authentication_repository.dart';
 import '../../../utils/extensions/context_extensions.dart';
-import '../../core/widgets/primary_button.dart';
 import '../blocs/login/login_cubit.dart';
 import '../blocs/login/login_state.dart';
 import 'otp_input.dart';
@@ -93,54 +92,54 @@ class _PhoneLoginViewState extends State<_PhoneLoginView> {
 
   Future<void> _verifyPhoneCode(String verificationId, String smsCode) async {
     await context.read<LoginCubit>().verifyPhoneCode(
-          verificationId: verificationId,
-          smsCode: smsCode,
-        );
+      verificationId: verificationId,
+      smsCode: smsCode,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kin'),
-      ),
-      body: BlocConsumer<LoginCubit, LoginState>(
-        listener: (context, state) {
-          state.whenOrNull(
-            failure: (message, _, __) {
-              context.showErrorSnackBar(message);
-            },
-            phoneCodeSent: (_, __) {
-              context.showSnackBar('Verification code sent!');
-            },
-          );
-        },
-        builder: (context, state) {
-          return state.maybeWhen(
-            // Show OTP verification screen
-            phoneCodeSent: (verificationId, phoneNumber) =>
-                _buildOtpVerificationView(
-              context,
-              state,
-              verificationId,
-              phoneNumber,
-            ),
-            // Show OTP verification screen with error
-            failure: (message, verificationId, phoneNumber) {
-              if (verificationId != null) {
-                return _buildOtpVerificationView(
-                  context,
-                  state,
-                  verificationId,
-                  phoneNumber ?? _completePhoneNumber,
-                );
-              }
-              return _buildPhoneInputView(context, state);
-            },
-            // Show phone input screen for all other states
-            orElse: () => _buildPhoneInputView(context, state),
-          );
-        },
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: BlocConsumer<LoginCubit, LoginState>(
+          listener: (context, state) {
+            state.whenOrNull(
+              failure: (message, _, __) {
+                context.showErrorSnackBar(message);
+              },
+              phoneCodeSent: (_, __) {
+                context.showSnackBar('Verification code sent!');
+              },
+            );
+          },
+          builder: (context, state) {
+            return state.maybeWhen(
+              // Show OTP verification screen
+              phoneCodeSent: (verificationId, phoneNumber) =>
+                  _buildOtpVerificationView(
+                    context,
+                    state,
+                    verificationId,
+                    phoneNumber,
+                  ),
+              // Show OTP verification screen with error
+              failure: (message, verificationId, phoneNumber) {
+                if (verificationId != null) {
+                  return _buildOtpVerificationView(
+                    context,
+                    state,
+                    verificationId,
+                    phoneNumber ?? _completePhoneNumber,
+                  );
+                }
+                return _buildPhoneInputView(context, state);
+              },
+              // Show phone input screen for all other states
+              orElse: () => _buildPhoneInputView(context, state),
+            );
+          },
+        ),
       ),
     );
   }
@@ -152,61 +151,109 @@ class _PhoneLoginViewState extends State<_PhoneLoginView> {
     );
 
     return SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Icon
-                Icon(
-                  Icons.phone_android,
-                  size: 80,
-                  color: context.colorScheme.primary,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Enter Phone Number',
-                  style: context.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'We will send you a verification code',
-                  style: context.textTheme.bodyLarge?.copyWith(
-                    color: context.colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Icon
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.primaryContainer.withValues(
+                          alpha: 0.3,
+                        ),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Icon(
+                        Icons.bolt_rounded, // More energetic icon
+                        size: 48,
+                        color: context.colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      'Never Miss\nA Workout.',
+                      style: context.textTheme.displaySmall?.copyWith(
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Enter your phone number to join your squad and start your streak.',
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        color: context.colorScheme.onSurfaceVariant,
+                        height: 1.5,
+                      ),
+                    ),
+                    const SizedBox(height: 48),
 
-                // Phone Input
-                PhoneInput(
-                  controller: _phoneController,
-                  focusNode: _phoneFocusNode,
-                  enabled: !isLoading,
-                  onChanged: (phoneNumber) {
-                    _completePhoneNumber = phoneNumber;
-                  },
-                  onSubmitted: (_) => _sendPhoneCode(),
+                    // Phone Input
+                    Container(
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: context.colorScheme.outlineVariant.withValues(
+                            alpha: 0.2,
+                          ),
+                        ),
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: PhoneInput(
+                        controller: _phoneController,
+                        focusNode: _phoneFocusNode,
+                        enabled: !isLoading,
+                        onChanged: (phoneNumber) {
+                          _completePhoneNumber = phoneNumber;
+                        },
+                        onSubmitted: (_) => _sendPhoneCode(),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-
-                // Send Code Button
-                PrimaryButton(
-                  onPressed: _sendPhoneCode,
-                  text: 'Send Code',
-                  isLoading: isLoading,
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+
+          // Bottom CTA Area
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+            child: SizedBox(
+              width: double.infinity,
+              height: 64, // Taller, premium button
+              child: ElevatedButton(
+                onPressed: isLoading ? null : _sendPhoneCode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colorScheme.primary,
+                  foregroundColor: context.colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  elevation: 0,
+                ),
+                child: isLoading
+                    ? SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            context.colorScheme.onPrimary,
+                          ),
+                        ),
+                      )
+                    : const Text('Continue'),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -223,86 +270,107 @@ class _PhoneLoginViewState extends State<_PhoneLoginView> {
     );
 
     return SafeArea(
-      child: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Icon
-              Icon(
-                Icons.sms_outlined,
-                size: 80,
-                color: context.colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Enter Verification Code',
-                style: context.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'We sent a code to $phoneNumber',
-                style: context.textTheme.bodyLarge?.copyWith(
-                  color: context.colorScheme.onSurfaceVariant,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 48),
-
-              // OTP Input
-              OtpInput(
-                enabled: !isLoading,
-                onCompleted: (code) {
-                  _verifyPhoneCode(verificationId, code);
-                },
-              ),
-              const SizedBox(height: 32),
-
-              // Resend Code Button
-              if (_resendCountdown > 0)
-                Text(
-                  'Resend code in $_resendCountdown seconds',
-                  style: context.textTheme.bodyMedium?.copyWith(
-                    color: context.colorScheme.onSurfaceVariant,
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back button wrapper
+                  GestureDetector(
+                    onTap: isLoading
+                        ? null
+                        : () {
+                            context.read<LoginCubit>().reset();
+                            _resendTimer?.cancel();
+                            setState(() {
+                              _resendCountdown = 0;
+                            });
+                          },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: context.colorScheme.onSurface,
+                      ),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                )
-              else
-                TextButton(
-                  onPressed: isLoading ? null : _resendPhoneCode,
-                  child: const Text('Resend Code'),
-                ),
-              const SizedBox(height: 16),
+                  const SizedBox(height: 32),
+                  Text('Verify Code', style: context.textTheme.displaySmall),
+                  const SizedBox(height: 16),
+                  RichText(
+                    text: TextSpan(
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        color: context.colorScheme.onSurfaceVariant,
+                        height: 1.5,
+                      ),
+                      children: [
+                        const TextSpan(text: 'We sent a 6-digit code to\n'),
+                        TextSpan(
+                          text: phoneNumber,
+                          style: TextStyle(
+                            color: context.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 48),
 
-              // Change Phone Number
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () {
-                        context.read<LoginCubit>().reset();
-                        _resendTimer?.cancel();
-                        setState(() {
-                          _resendCountdown = 0;
-                        });
-                      },
-                child: const Text('Change Phone Number'),
+                  // OTP Input
+                  OtpInput(
+                    enabled: !isLoading,
+                    onCompleted: (code) {
+                      _verifyPhoneCode(verificationId, code);
+                    },
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  // Resend Action
+                  Center(
+                    child: _resendCountdown > 0
+                        ? Text(
+                            'Resend code in $_resendCountdown s',
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
+                        : TextButton(
+                            onPressed: isLoading ? null : _resendPhoneCode,
+                            style: TextButton.styleFrom(
+                              foregroundColor: context.colorScheme.primary,
+                            ),
+                            child: const Text(
+                              'Resend Code',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                  ),
+                ],
               ),
-
-              // Loading Indicator
-              if (isLoading) ...[
-                const SizedBox(height: 24),
-                const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ],
-            ],
+            ),
           ),
-        ),
+
+          // Loading Overlay State at bottom
+          if (isLoading)
+            Container(
+              padding: const EdgeInsets.all(32),
+              child: const CircularProgressIndicator(),
+            ),
+        ],
       ),
     );
   }

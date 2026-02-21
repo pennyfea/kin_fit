@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/repositories/check_in_repository.dart';
 import '../../../data/repositories/group_repository.dart';
+import '../../../data/repositories/user_repository.dart';
 import '../../../domain/models/check_in.dart';
 import '../../../domain/models/group.dart';
+import '../../../domain/models/user.dart';
 import '../../../utils/logger.dart';
 
 part 'group_detail_event.dart';
@@ -15,8 +17,10 @@ class GroupDetailBloc extends Bloc<GroupDetailEvent, GroupDetailState> {
   GroupDetailBloc({
     required GroupRepository groupRepository,
     required CheckInRepository checkInRepository,
+    required UserRepository userRepository,
   })  : _groupRepository = groupRepository,
         _checkInRepository = checkInRepository,
+        _userRepository = userRepository,
         super(const GroupDetailState()) {
     on<GroupDetailSubscriptionRequested>(_onSubscriptionRequested);
     on<GroupDetailRefreshRequested>(_onRefreshRequested);
@@ -26,6 +30,7 @@ class GroupDetailBloc extends Bloc<GroupDetailEvent, GroupDetailState> {
 
   final GroupRepository _groupRepository;
   final CheckInRepository _checkInRepository;
+  final UserRepository _userRepository;
 
   Future<void> _onSubscriptionRequested(
     GroupDetailSubscriptionRequested event,
@@ -43,12 +48,16 @@ class GroupDetailBloc extends Bloc<GroupDetailEvent, GroupDetailState> {
         return;
       }
 
+      // Load member profiles
+      final members = await _loadMembers(group.memberIds);
+
       await emit.forEach(
         _checkInRepository.watchTodayCheckIns(event.groupId),
         onData: (checkIns) {
           return state.copyWith(
             status: GroupDetailStatus.loaded,
             group: group,
+            members: members,
             todayCheckIns: checkIns,
           );
         },
@@ -67,6 +76,19 @@ class GroupDetailBloc extends Bloc<GroupDetailEvent, GroupDetailState> {
     }
   }
 
+  Future<List<User>> _loadMembers(List<String> memberIds) async {
+    final members = <User>[];
+    for (final id in memberIds) {
+      try {
+        final user = await _userRepository.getUser(id);
+        if (user != null) members.add(user);
+      } catch (e) {
+        _log.warning('Failed to load member $id: $e');
+      }
+    }
+    return members;
+  }
+
   Future<void> _onRefreshRequested(
     GroupDetailRefreshRequested event,
     Emitter<GroupDetailState> emit,
@@ -77,7 +99,8 @@ class GroupDetailBloc extends Bloc<GroupDetailEvent, GroupDetailState> {
       final group = await _groupRepository.getGroup(event.groupId);
       if (group == null) return;
 
-      emit(state.copyWith(group: group));
+      final members = await _loadMembers(group.memberIds);
+      emit(state.copyWith(group: group, members: members));
     } catch (_) {
       // Silently fail on refresh — keep showing existing data
     }

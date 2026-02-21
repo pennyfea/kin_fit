@@ -14,6 +14,7 @@ import 'ui/app/blocs/app_event.dart';
 import 'ui/app/blocs/app_state.dart';
 import 'ui/core/theme/app_theme.dart';
 import 'ui/groups/blocs/group_bloc.dart';
+import 'ui/home/blocs/feed_cubit.dart';
 import 'utils/logger.dart';
 
 /// Main entry point for the application.
@@ -71,6 +72,13 @@ class App extends StatelessWidget {
               userRepository: context.read<UserRepository>(),
             ),
           ),
+          BlocProvider(
+            create: (context) => FeedCubit(
+              groupRepository: context.read<GroupRepository>(),
+              checkInRepository: context.read<CheckInRepository>(),
+              userRepository: context.read<UserRepository>(),
+            ),
+          ),
         ],
         child: const AppView(),
       ),
@@ -94,12 +102,13 @@ class _AppViewState extends State<AppView> {
   @override
   void initState() {
     super.initState();
-    // If already authenticated on launch, start the groups subscription.
+    // If already authenticated on launch, start subscriptions.
     final appState = context.read<AppBloc>().state;
     if (appState.status == AppStatus.authenticated) {
       context.read<GroupBloc>().add(
             GroupsSubscriptionRequested(appState.user.id),
           );
+      context.read<FeedCubit>().load(appState.user.id);
     }
   }
 
@@ -112,6 +121,7 @@ class _AppViewState extends State<AppView> {
           context.read<GroupBloc>().add(
                 GroupsSubscriptionRequested(state.user.id),
               );
+          context.read<FeedCubit>().load(state.user.id);
         }
       },
       child: MaterialApp.router(

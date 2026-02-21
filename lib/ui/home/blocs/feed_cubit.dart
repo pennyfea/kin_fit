@@ -20,11 +20,9 @@ class FeedCubit extends Cubit<FeedState> {
     required GroupRepository groupRepository,
     required CheckInRepository checkInRepository,
     required UserRepository userRepository,
-    required String userId,
   })  : _groupRepository = groupRepository,
         _checkInRepository = checkInRepository,
         _userRepository = userRepository,
-        _userId = userId,
         super(const FeedState());
 
   static const _log = Logger('FeedCubit');
@@ -32,7 +30,7 @@ class FeedCubit extends Cubit<FeedState> {
   final GroupRepository _groupRepository;
   final CheckInRepository _checkInRepository;
   final UserRepository _userRepository;
-  final String _userId;
+  String _userId = '';
 
   StreamSubscription<List<Group>>? _groupsSubscription;
   final Map<String, StreamSubscription<List<CheckIn>>> _checkInSubscriptions =
@@ -44,10 +42,18 @@ class FeedCubit extends Cubit<FeedState> {
   Set<String> _allMemberIds = {};
 
   /// Start watching the user's groups and their check-ins.
-  void load() {
+  void load(String userId) {
+    _userId = userId;
     emit(state.copyWith(status: FeedStatus.loading));
 
+    // Clear previous subscriptions
     _groupsSubscription?.cancel();
+    for (final sub in _checkInSubscriptions.values) {
+      sub.cancel();
+    }
+    _checkInSubscriptions.clear();
+    _checkInsByGroup.clear();
+
     _groupsSubscription = _groupRepository.watchUserGroups(_userId).listen(
       _onGroupsChanged,
       onError: (Object error) {

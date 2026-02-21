@@ -21,15 +21,17 @@ final class GroupCreateRequested extends GroupEvent {
   const GroupCreateRequested({
     required this.name,
     required this.userId,
+    this.emoji,
     this.maxMembers,
   });
 
   final String name;
   final String userId;
+  final String? emoji;
   final int? maxMembers;
 
   @override
-  List<Object?> get props => [name, userId, maxMembers];
+  List<Object?> get props => [name, userId, emoji, maxMembers];
 }
 
 /// Join an existing group via invite code.

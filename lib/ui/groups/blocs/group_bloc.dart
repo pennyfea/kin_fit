@@ -68,6 +68,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       final group = await _groupRepository.createGroup(
         name: event.name,
         creatorId: event.userId,
+        emoji: event.emoji,
         maxMembers: event.maxMembers,
       );
       _log.info('Create: group created ${group.id}');

@@ -42,7 +42,6 @@ class PhoneInput extends StatelessWidget {
       decoration: const InputDecoration(
         labelText: 'Phone Number',
         hintText: 'Enter your phone number',
-        border: OutlineInputBorder(),
       ),
       initialCountryCode: 'US',
       keyboardType: TextInputType.phone,

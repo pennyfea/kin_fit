@@ -5,11 +5,9 @@ import 'package:lottie/lottie.dart';
 import '../../../domain/models/check_in.dart';
 import '../../../domain/models/user.dart';
 import '../blocs/feed_state.dart';
+import 'check_in_card.dart';
 
-/// Wall view showing today's check-ins as a grid.
-///
-/// Checked-in members show their photo. Members who haven't
-/// checked in appear as greyed-out avatars (wall of shame).
+/// Wall view showing today's check-ins as a scrolling feed.
 class CheckInWall extends StatelessWidget {
   const CheckInWall({
     required this.feedState,
@@ -28,8 +26,7 @@ class CheckInWall extends StatelessWidget {
   Widget build(BuildContext context) {
     // Build ordered list: user first, then checked-in, then not-checked-in
     final checkedInUserIds = feedState.checkIns.map((c) => c.userId).toSet();
-    final notCheckedInIds =
-        feedState.allMemberIds.difference(checkedInUserIds);
+    final notCheckedInIds = feedState.allMemberIds.difference(checkedInUserIds);
 
     // User's own check-in first
     final myCheckIn = feedState.checkIns
@@ -55,19 +52,21 @@ class CheckInWall extends StatelessWidget {
         .where((id) => id != currentUserId)
         .toList();
 
-    final totalItems = (myCheckIn.isNotEmpty ? 1 : 0) +
+    final totalItems =
+        (myCheckIn.isNotEmpty ? 1 : 0) +
         uniqueOthersCheckedIn.length +
         missingIds.length;
 
     if (totalItems == 0) {
       return Container(
-        color: Colors.grey[900],
+        color: Theme.of(context).colorScheme.surface,
         child: Center(
           child: Text(
             'No group members yet',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
-              fontSize: 16,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ),
@@ -78,189 +77,107 @@ class CheckInWall extends StatelessWidget {
         (myCheckIn.isNotEmpty ? 1 : 0) + uniqueOthersCheckedIn.length;
     final totalMembers = feedState.allMemberIds.length;
 
-    return Container(
-      color: Colors.grey[900],
-      child: Column(
-        children: [
-          // Header: check-in progress
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(
-              children: [
-                Text(
-                  '$checkedInCount / $totalMembers checked in',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // Grid
-          Expanded(
-            child: GridView.builder(
-        padding: const EdgeInsets.all(8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 8,
-          mainAxisSpacing: 8,
-        ),
-        itemCount: totalItems,
-        itemBuilder: (context, index) {
-          // User's own check-in at index 0
-          if (myCheckIn.isNotEmpty && index == 0) {
-            return _CheckedInTile(
-              checkIn: myCheckIn.first,
-              user: feedState.users[currentUserId],
-              isCurrentUser: true,
-              onTap: () => onTapCheckIn?.call(
-                myCheckIn.first,
-                feedState.users[currentUserId],
-              ),
-            );
-          }
-
-          final adjustedIndex =
-              index - (myCheckIn.isNotEmpty ? 1 : 0);
-
-          if (adjustedIndex < uniqueOthersCheckedIn.length) {
-            final checkIn = uniqueOthersCheckedIn[adjustedIndex];
-            final user = feedState.users[checkIn.userId];
-            return _CheckedInTile(
-              checkIn: checkIn,
-              user: user,
-              isCurrentUser: false,
-              onTap: () => onTapCheckIn?.call(checkIn, user),
-            );
-          }
-
-          // Not checked in — wall of shame
-          final missingIndex =
-              adjustedIndex - uniqueOthersCheckedIn.length;
-          final missingUserId = missingIds[missingIndex];
-          final missingUser = feedState.users[missingUserId];
-          return _MissingTile(
-            user: missingUser,
-            index: missingIndex,
-            totalMissing: missingIds.length,
-          );
-        },
-      ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Tile for a member who HAS checked in — shows their photo.
-class _CheckedInTile extends StatelessWidget {
-  const _CheckedInTile({
-    required this.checkIn,
-    this.user,
-    required this.isCurrentUser,
-    this.onTap,
-  });
-
-  final CheckIn checkIn;
-  final User? user;
-  final bool isCurrentUser;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
+    return SafeArea(
+      child: Container(
+        color: Theme.of(context).colorScheme.surface,
+        child: Column(
           children: [
-            // Photo
-            CachedNetworkImage(
-              imageUrl: checkIn.photoUrl,
-              fit: BoxFit.cover,
-              placeholder: (_, __) => Container(color: Colors.grey[800]),
-              errorWidget: (_, __, ___) => Container(
-                color: Colors.grey[800],
-                child: const Icon(Icons.broken_image, color: Colors.white38),
-              ),
-            ),
-
-            // Gradient at bottom
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 56,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // Name + emoji
-            Positioned(
-              left: 8,
-              right: 8,
-              bottom: 8,
+            // Header: "Today's Check-ins" and progress
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
+                  Text(
+                    "Today's Feed",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Text(
-                      isCurrentUser
-                          ? 'You'
-                          : user?.firstName ?? user?.displayName ?? 'Someone',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                      '$checkedInCount / $totalMembers',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.8),
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  if (checkIn.effortEmoji != null)
-                    Text(
-                      checkIn.effortEmoji!,
-                      style: const TextStyle(fontSize: 16),
-                    ),
                 ],
               ),
             ),
 
-            // "You" badge
-            if (isCurrentUser)
-              Positioned(
-                left: 8,
-                top: 8,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Your check-in',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+            // Feed
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.only(
+                  left: 16,
+                  right: 16,
+                  bottom: 24,
+                  top: 0,
                 ),
+                itemCount: totalItems,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  // User's own check-in at index 0
+                  if (myCheckIn.isNotEmpty && index == 0) {
+                    return _buildFeedCard(
+                      context,
+                      myCheckIn.first,
+                      feedState.users[currentUserId],
+                    );
+                  }
+
+                  final adjustedIndex = index - (myCheckIn.isNotEmpty ? 1 : 0);
+
+                  if (adjustedIndex < uniqueOthersCheckedIn.length) {
+                    final checkIn = uniqueOthersCheckedIn[adjustedIndex];
+                    final user = feedState.users[checkIn.userId];
+                    return _buildFeedCard(context, checkIn, user);
+                  }
+
+                  // Not checked in — Missing tile
+                  final missingIndex =
+                      adjustedIndex - uniqueOthersCheckedIn.length;
+                  final missingUserId = missingIds[missingIndex];
+                  final missingUser = feedState.users[missingUserId];
+                  return SizedBox(
+                    height: 120, // Smaller tile for missing users
+                    child: _MissingTile(
+                      user: missingUser,
+                      index: missingIndex,
+                      totalMissing: missingIds.length,
+                    ),
+                  );
+                },
               ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeedCard(BuildContext context, CheckIn checkIn, User? user) {
+    return AspectRatio(
+      aspectRatio: 3 / 4,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: CheckInCard(
+          checkIn: checkIn,
+          user: user,
+          onReact: (emoji) => onReact?.call(checkIn, emoji),
         ),
       ),
     );
@@ -364,24 +281,45 @@ class _MissingTileState extends State<_MissingTile>
           if (hasPhoto)
             ColorFiltered(
               colorFilter: const ColorFilter.matrix(<double>[
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0.2126, 0.7152, 0.0722, 0, 0,
-                0,      0,      0,      1, 0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0.2126,
+                0.7152,
+                0.0722,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
               ]),
               child: CachedNetworkImage(
                 imageUrl: widget.user!.photoUrl!,
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(color: Colors.grey[800]),
-                errorWidget: (_, __, ___) =>
-                    Container(color: Colors.grey[800]),
+                placeholder: (_, __) => Container(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
+                ),
               ),
             )
           else
-            Container(color: Colors.grey[800]),
+            Container(color: Theme.of(context).colorScheme.surfaceContainer),
 
           // Dark overlay
-          Container(color: Colors.black.withValues(alpha: 0.4)),
+          Container(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
+          ),
 
           // Lottie alarm clock — centered, plays when it's this tile's turn
           if (_isMyTurn && _composition != null)
@@ -399,7 +337,9 @@ class _MissingTileState extends State<_MissingTile>
             Center(
               child: Icon(
                 Icons.person_outline,
-                color: Colors.grey[600],
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 size: 48,
               ),
             ),
@@ -417,19 +357,18 @@ class _MissingTileState extends State<_MissingTile>
                   widget.user?.firstName ??
                       widget.user?.displayName ??
                       'Unknown',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Not yet',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    fontSize: 11,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ],

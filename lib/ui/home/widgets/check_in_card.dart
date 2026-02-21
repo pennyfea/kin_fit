@@ -34,118 +34,132 @@ class CheckInCard extends StatelessWidget {
           height: height,
           width: constraints.maxWidth,
           child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Photo
-            Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: checkIn.photoUrl,
-                fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  color: Colors.grey[900],
-                  child: const Center(
-                    child: CircularProgressIndicator(color: Colors.white54),
+            fit: StackFit.expand,
+            children: [
+              // Photo
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: checkIn.photoUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => Container(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5),
+                      ),
+                    ),
                   ),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  color: Colors.grey[900],
-                  child: const Center(
-                    child: Icon(Icons.broken_image,
-                        color: Colors.white54, size: 48),
-                  ),
-                ),
-              ),
-            ),
-
-            // Gradient overlay at bottom
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 160,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.8),
-                    ],
+                  errorWidget: (_, __, ___) => Container(
+                    color: Theme.of(context).colorScheme.surfaceContainerLow,
+                    child: Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5),
+                        size: 48,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // User info + caption + reactions at bottom
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      _UserAvatar(user: user, size: 32),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          user?.displayName ?? 'Someone',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+              // Gradient overlay at bottom
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 160,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.8),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // User info + caption + reactions at bottom
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 16,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        _UserAvatar(user: user, size: 32),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            user?.displayName ?? 'Someone',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                         ),
-                      ),
-                      if (checkIn.effortEmoji != null)
-                        Text(
-                          checkIn.effortEmoji!,
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                    ],
-                  ),
-                  if (checkIn.caption != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      checkIn.caption!,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                        if (checkIn.effortEmoji != null)
+                          Text(
+                            checkIn.effortEmoji!,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                      ],
                     ),
-                  ],
-                  const SizedBox(height: 12),
-                  // Reaction bar
-                  Row(
-                    children: [
-                      for (final emoji in _quickReactions)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: GestureDetector(
-                            onTap: () => onReact?.call(emoji),
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(20),
+                    if (checkIn.caption != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        checkIn.caption!,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.9),
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                    // Reaction bar
+                    Row(
+                      children: [
+                        for (final emoji in _quickReactions)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: GestureDetector(
+                              onTap: () => onReact?.call(emoji),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.onSurface
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  emoji,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineSmall,
+                                ),
                               ),
-                              child: Text(emoji,
-                                  style: const TextStyle(fontSize: 20)),
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         );
       },
     );
@@ -153,7 +167,7 @@ class CheckInCard extends StatelessWidget {
 }
 
 class _UserAvatar extends StatelessWidget {
-  const _UserAvatar({this.user, required this.size});
+  const _UserAvatar({required this.size, this.user});
 
   final User? user;
   final double size;
@@ -164,17 +178,16 @@ class _UserAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: size / 2,
-      backgroundColor: Colors.white24,
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
       backgroundImage: user?.photoUrl != null
           ? CachedNetworkImageProvider(user!.photoUrl!)
           : null,
       child: user?.photoUrl == null
           ? Text(
               initials,
-              style: TextStyle(
-                color: Colors.white,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
                 fontSize: size * 0.4,
-                fontWeight: FontWeight.w600,
               ),
             )
           : null,
@@ -183,8 +196,9 @@ class _UserAvatar extends StatelessWidget {
 
   String _getInitials() {
     if (user == null) return '?';
-    final first =
-        user!.firstName?.isNotEmpty == true ? user!.firstName![0] : '';
+    final first = user!.firstName?.isNotEmpty == true
+        ? user!.firstName![0]
+        : '';
     final last = user!.lastName?.isNotEmpty == true ? user!.lastName![0] : '';
     if (first.isEmpty && last.isEmpty) return '?';
     return '$first$last'.toUpperCase();

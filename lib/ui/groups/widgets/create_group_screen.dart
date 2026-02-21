@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../utils/extensions/context_extensions.dart';
 import '../../app/blocs/app_bloc.dart';
 import '../blocs/group_bloc.dart';
 
@@ -15,9 +16,25 @@ class CreateGroupScreen extends StatefulWidget {
 class _CreateGroupScreenState extends State<CreateGroupScreen> {
   final _nameController = TextEditingController();
   int _maxMembers = 4;
+  String? _selectedEmoji;
 
   static const _minMembers = 2;
   static const _maxMembersLimit = 12;
+
+  static const _emojiOptions = [
+    '\u{1F4AA}', // 💪
+    '\u{1F525}', // 🔥
+    '\u{26A1}', // ⚡
+    '\u{1F3C3}', // 🏃
+    '\u{1F6B4}', // 🚴
+    '\u{1F3CB}', // 🏋️
+    '\u{1F9D8}', // 🧘
+    '\u{1F3AF}', // 🎯
+    '\u{2B50}', // ⭐
+    '\u{1F680}', // 🚀
+    '\u{1F3C6}', // 🏆
+    '\u{1F48E}', // 💎
+  ];
 
   @override
   void dispose() {
@@ -31,16 +48,19 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
 
     final userId = context.read<AppBloc>().state.user.id;
     context.read<GroupBloc>().add(
-          GroupCreateRequested(
-            name: name,
-            userId: userId,
-            maxMembers: _maxMembers,
-          ),
-        );
+      GroupCreateRequested(
+        name: name,
+        userId: userId,
+        emoji: _selectedEmoji,
+        maxMembers: _maxMembers,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocListener<GroupBloc, GroupState>(
       listenWhen: (previous, current) =>
           previous.actionStatus != current.actionStatus,
@@ -48,8 +68,8 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
         if (state.actionStatus == GroupActionStatus.success) {
           context.pop();
         } else if (state.actionStatus == GroupActionStatus.failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.actionError ?? 'Failed to create group')),
+          context.showSnackBar(
+            state.actionError ?? 'Failed to create group',
           );
         }
       },
@@ -59,65 +79,198 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
           final isLoading = actionStatus == GroupActionStatus.loading;
 
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Create Group'),
-            ),
+            backgroundColor: context.colorScheme.surface,
+            appBar: AppBar(title: const Text('Create Squad')),
             body: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextField(
-                    controller: _nameController,
-                    autofocus: true,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'Group Name',
-                      hintText: 'e.g. Morning Crew',
-                      border: OutlineInputBorder(),
-                    ),
-                    onSubmitted: (_) => _createGroup(),
-                  ),
-                  const SizedBox(height: 24),
+                  // Emoji picker
                   Text(
-                    'Group Size',
-                    style: Theme.of(context).textTheme.titleSmall,
+                    'Squad Icon',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
                     children: [
-                      IconButton.outlined(
-                        onPressed: _maxMembers > _minMembers
-                            ? () => setState(() => _maxMembers--)
-                            : null,
-                        icon: const Icon(Icons.remove),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            '$_maxMembers members',
-                            style: Theme.of(context).textTheme.titleMedium,
+                      // "None" option
+                      GestureDetector(
+                        onTap: () => setState(() => _selectedEmoji = null),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: _selectedEmoji == null
+                                ? theme.colorScheme.primary
+                                    .withValues(alpha: 0.15)
+                                : theme.colorScheme.surfaceContainerHighest
+                                    .withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: _selectedEmoji == null
+                                  ? theme.colorScheme.primary
+                                  : Colors.transparent,
+                              width: 2,
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.text_fields,
+                              size: 20,
+                              color: _selectedEmoji == null
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.3),
+                            ),
                           ),
                         ),
                       ),
-                      IconButton.outlined(
-                        onPressed: _maxMembers < _maxMembersLimit
-                            ? () => setState(() => _maxMembers++)
-                            : null,
-                        icon: const Icon(Icons.add),
-                      ),
+                      // Emoji options
+                      ..._emojiOptions.map((emoji) {
+                        final isSelected = _selectedEmoji == emoji;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedEmoji = emoji),
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? theme.colorScheme.primary
+                                      .withValues(alpha: 0.15)
+                                  : theme.colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: isSelected
+                                    ? theme.colorScheme.primary
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                emoji,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
                     ],
                   ),
+
+                  const SizedBox(height: 28),
+
+                  // Name field
+                  TextField(
+                    controller: _nameController,
+                    autofocus: true,
+                    style: context.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Squad Name',
+                      hintText: 'e.g. Morning Crew',
+                    ),
+                    onSubmitted: (_) => _createGroup(),
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Squad size
+                  Text(
+                    'Squad Size',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: context.colorScheme.outlineVariant
+                            .withValues(alpha: 0.08),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.surfaceContainerHighest
+                                .withValues(alpha: 0.4),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            onPressed: _maxMembers > _minMembers
+                                ? () => setState(() => _maxMembers--)
+                                : null,
+                            icon: const Icon(Icons.remove),
+                          ),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              '$_maxMembers members',
+                              style: context.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary
+                                .withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            onPressed: _maxMembers < _maxMembersLimit
+                                ? () => setState(() => _maxMembers++)
+                                : null,
+                            icon: Icon(
+                              Icons.add,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
                   const Spacer(),
-                  FilledButton(
-                    onPressed: isLoading ? null : _createGroup,
-                    child: isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Text('Create Group'),
+
+                  // Create button
+                  SizedBox(
+                    height: 60,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _createGroup,
+                      child: isLoading
+                          ? SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  context.colorScheme.onPrimary,
+                                ),
+                              ),
+                            )
+                          : const Text('Create Squad'),
+                    ),
                   ),
                 ],
               ),

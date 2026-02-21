@@ -57,20 +57,24 @@ class LoginCubit extends Cubit<LoginState> {
         verificationId: verificationId,
         smsCode: smsCode,
       );
-      emit(const LoginState.success());
+      if (!isClosed) emit(const LoginState.success());
       _logger.info('Phone code verified successfully');
     } on VerifyPhoneCodeFailure catch (e) {
       _logger.error('Phone code verification failed', e);
-      emit(LoginState.failure(
-        e.message,
-        verificationId: verificationId,
-      ));
+      if (!isClosed) {
+        emit(LoginState.failure(
+          e.message,
+          verificationId: verificationId,
+        ));
+      }
     } catch (e) {
       _logger.error('Unexpected error during phone code verification', e);
-      emit(LoginState.failure(
-        'An unexpected error occurred.',
-        verificationId: verificationId,
-      ));
+      if (!isClosed) {
+        emit(LoginState.failure(
+          'An unexpected error occurred.',
+          verificationId: verificationId,
+        ));
+      }
     }
   }
 

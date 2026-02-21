@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../utils/extensions/context_extensions.dart';
 
 import '../../../data/repositories/check_in_repository.dart';
 import '../../../data/repositories/user_repository.dart';
@@ -49,6 +50,8 @@ class _EditProfileViewState extends State<_EditProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocConsumer<ProfileCubit, ProfileState>(
       listenWhen: (previous, current) =>
           !_initialized && current.status == ProfileStatus.loaded,
@@ -61,42 +64,155 @@ class _EditProfileViewState extends State<_EditProfileView> {
         final isLoaded = state.status == ProfileStatus.loaded;
 
         return Scaffold(
+          backgroundColor: context.colorScheme.surface,
           appBar: AppBar(
-            title: const Text('Edit Profile'),
-            actions: [
-              TextButton(
-                onPressed: isLoaded ? _save : null,
-                child: const Text('Save'),
-              ),
-            ],
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => context.pop(),
+            ),
           ),
           body: isLoaded
-              ? Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _firstNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'First Name',
+              ? CustomScrollView(
+                  slivers: [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-                        textCapitalization: TextCapitalization.words,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _lastNameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Last Name',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Edit Profile',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            TextField(
+                              controller: _firstNameController,
+                              style: theme.textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: 'First Name',
+                                filled: true,
+                                fillColor: theme
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.2),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.outlineVariant
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.outlineVariant
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 16,
+                                ),
+                              ),
+                              textCapitalization: TextCapitalization.words,
+                              textInputAction: TextInputAction.next,
+                            ),
+                            const SizedBox(height: 20),
+                            TextField(
+                              controller: _lastNameController,
+                              style: theme.textTheme.bodyLarge,
+                              decoration: InputDecoration(
+                                labelText: 'Last Name',
+                                filled: true,
+                                fillColor: theme
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.2),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.outlineVariant
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.outlineVariant
+                                        .withValues(alpha: 0.2),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: theme.colorScheme.primary,
+                                    width: 2,
+                                  ),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 16,
+                                ),
+                              ),
+                              textCapitalization: TextCapitalization.words,
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _save(),
+                            ),
+                            const Spacer(),
+                            const SizedBox(height: 32),
+                            ElevatedButton(
+                              onPressed: _save,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                backgroundColor: theme.colorScheme.primary,
+                                foregroundColor: theme.colorScheme.onPrimary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                elevation: 8,
+                                shadowColor: theme.colorScheme.primary
+                                    .withValues(alpha: 0.5),
+                              ),
+                              child: Text(
+                                'Save Changes',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: theme.colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
                         ),
-                        textCapitalization: TextCapitalization.words,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _save(),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 )
-              : const Center(child: CircularProgressIndicator()),
+              : Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
         );
       },
     );
@@ -104,9 +220,9 @@ class _EditProfileViewState extends State<_EditProfileView> {
 
   Future<void> _save() async {
     await context.read<ProfileCubit>().updateName(
-          firstName: _firstNameController.text,
-          lastName: _lastNameController.text,
-        );
+      firstName: _firstNameController.text,
+      lastName: _lastNameController.text,
+    );
     if (mounted) context.pop();
   }
 }

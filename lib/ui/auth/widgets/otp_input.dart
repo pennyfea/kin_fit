@@ -10,11 +10,7 @@ import 'package:flutter/services.dart';
 /// - Backspace handling to move to previous field
 class OtpInput extends StatefulWidget {
   /// Creates an [OtpInput].
-  const OtpInput({
-    required this.onCompleted,
-    this.enabled = true,
-    super.key,
-  });
+  const OtpInput({required this.onCompleted, this.enabled = true, super.key});
 
   /// Called when all 6 digits have been entered.
   ///
@@ -33,10 +29,7 @@ class _OtpInputState extends State<OtpInput> {
     6,
     (_) => TextEditingController(),
   );
-  final List<FocusNode> _focusNodes = List.generate(
-    6,
-    (_) => FocusNode(),
-  );
+  final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
 
   @override
   void dispose() {
@@ -123,36 +116,32 @@ class _OtpInputState extends State<OtpInput> {
               keyboardType: TextInputType.number,
               textAlign: TextAlign.center,
               maxLength: 1,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(context).textTheme.headlineSmall,
               decoration: InputDecoration(
                 counterText: '',
+                filled: true,
+                fillColor: colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.1,
+                ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: colorScheme.primary,
-                    width: 2,
-                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide(
-                    color: colorScheme.outline,
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.1),
                   ),
                 ),
                 disabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: colorScheme.outline.withValues(alpha: 0.5),
-                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
